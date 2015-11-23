@@ -17,11 +17,6 @@ fi
 done
 }
 
-function ffind()
-{
-    find * -name "$@"
-}
-
 function aobjdump()
 {
     local ARCH=$(get_build_var TARGET_ARCH)
@@ -102,3 +97,44 @@ function armldd()
     esac
     $ANDROID_TOOLCHAIN/$ARMLDD -a $@ | grep "Shared library" --color
 }
+# some more ls aliases
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+alias llh='ls -alFh'
+alias adbs='adb shell'
+
+function dumptrace(){
+    arm-linux-androideabi-addr2line -f -C -e ${OUT}/symbols/$2 $1
+}
+
+function ffind(){
+    find * -name "$@"
+}
+
+function sgrep() {
+    find . -name .repo -prune -o -name .git -prune -o  -type f -iregex '.*\.\(c\|h\|cpp\|S\|java\|xml\|sh\|mk\)' -print0 | xargs -0 grep --color -n "$@"
+}
+
+function jgrep() {
+    find . -name .repo -prune -o -name .git -prune -o  -type f -name "*\.java" -print0 | xargs -0 grep --color -n "$@"
+}
+
+function cgrep() {
+    find . -name .repo -prune -o -name .git -prune -o -type f \( -name '*.c' -o -name '*.cc' -o -name '*.cpp' -o -name '*.h' \) -print0 | xargs -0 grep --color -n "$@"
+}
+
+function resgrep() {
+    for dir in `find . -name .repo -prune -o -name .git -prune -o -name res -type d`; do find $dir -type f -name '*\.xml' -print0 | xargs -0 grep --color -n "$@"; done;
+}
+
+function mgrep()
+{    
+   find . -name .repo -prune -o -name .git -prune -o -regextype posix-egrep -iregex '(.*\/Makefile|.*\/Makefile\..*|.*\.make|.*\.mak|.*\.mk)' -type f -print0 | xargs -0 grep --color -n "$@"
+}    
+
+function treegrep()
+{    
+   find . -name .repo -prune -o -name .git -prune -o -regextype posix-egrep -iregex '.*\.(c|h|cpp|S|java|xml)' -type f -print0 | xargs -0 grep --color -n -i "$@" 
+}
+
