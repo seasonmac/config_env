@@ -138,3 +138,59 @@ function treegrep()
    find . -name .repo -prune -o -name .git -prune -o -regextype posix-egrep -iregex '.*\.(c|h|cpp|S|java|xml)' -type f -print0 | xargs -0 grep --color -n -i "$@" 
 }
 
+function dir_status()
+{
+    local DIR=`pwd`;
+    local CHANGED=0;
+    for param in "$@"; do
+        if [ -d ${param} ]; then 
+            for dir in `find ${DIR}/${param} -type d -name ".git"`;
+            do   
+                cd ${dir}/../;
+                local SHORT_DIR=`pwd | awk -v base_dir="${DIR}" ' {match($0,base_dir); short_dir=substr($0,RSTART+RLENGTH);print short_dir  }'`;
+                git status | grep "nothing to commit" > /dev/null;
+                if [ $? -eq 1 ] ; then 
+                    echo -e "\n-------------> ."${SHORT_DIR}" <-------------";
+                    CHANGED=1;
+                    git status;
+                    echo "";
+                fi;  
+            done;
+            cd ${DIR}
+        else 
+            echo -e "\n******ERROR:"${param}" is not a directory!\n"
+        fi   
+    done;
+    if [ $CHANGED == 0 ]; then 
+        echo -e "\n### DIR is clean, nothing changed! ###\n"
+    fi   
+}
+
+function dir_diff()
+{
+    local DIR=`pwd`;
+    local CHANGED=0;
+    for param in "$@"; do
+        if [ -d ${param} ]; then
+            for dir in `find ${DIR}/${param} -type d -name ".git"`;
+            do
+                cd ${dir}/../;
+                local SHORT_DIR=`pwd | awk -v base_dir="${DIR}" ' {match($0,base_dir); short_dir=substr($0,RSTART+RLENGTH);print short_dir  }'`;
+                git diff | grep "" > /dev/null;
+                if [ $? -eq 0 ]; then
+                    echo -e "\n-------------> ."${SHORT_DIR}" <-------------";
+                    CHANGED=1;
+                    git diff;
+                    echo "";
+                fi
+            done;
+            cd ${DIR}
+        else
+            echo -e "\n******ERROR:"${param}" is not a directory!\n"
+        fi
+    done;
+    if [ $CHANGED == 0 ]; then
+        echo -e "\n### DIR is clean, nothing changed! ###\n"
+    fi
+}
+
